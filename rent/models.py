@@ -50,3 +50,22 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class Listing(models.Model):
+    title = models.CharField(max_length=100)
+    desc = models.CharField(max_length=1000)
+    is_available = models.BooleanField(default=True)
+    internal_review = models.BooleanField(default=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('title', 'owner',)
+
+
+class Applicants(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+    applicant = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('listing', 'applicant', )
