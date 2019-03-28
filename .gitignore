@@ -105,4 +105,4 @@ migrations/
 
 # mypy
 .mypy_cache/
-
+.DS_Store
