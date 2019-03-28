@@ -2,7 +2,7 @@ import os
 import json
 
 from ada_project import settings
-from rent.models import CustomUser
+from rent.models import CustomUser, Listing, AcceptedApplicants, Applicants
 
 from django.views.generic import View
 from django.contrib.auth import authenticate, login, logout
@@ -61,6 +61,73 @@ def sign_out(request):
     logout(request)
 
     return JsonResponse({'message': 'User successfully logged out'})
+
+
+@csrf_exempt
+@require_POST
+def create_listing(request):
+
+    listing_body = json.loads(request.body)
+
+    try:
+        uobj = CustomUser.objects.get(email=listing_body['owner'])
+        if uobj.user_type.lower() == 'owner':
+            listing_body['owner'] = uobj
+        else:
+            raise AttributeError('User needs to be of type "Owner"')
+    except:
+        return JsonResponse({'message': 'User does not exist'})
+
+    lobj = Listing(**listing_body)
+    lobj.save()
+
+    return JsonResponse({'message': 'Listing created'})
+
+
+@require_POST
+def apply_for_listing(request):
+    tenant_user = CustomUser.objects.get(email=request.user)
+
+    robj = json.loads(request.body)
+
+    listing = Listing.objects.get(id=robj['lid'])
+
+    aobj = Applicants(**{'listing': listing, 'applicant': tenant_user})
+    aobj.save()
+
+    return JsonResponse({'message': 'Application submitted'})
+
+
+@require_POST
+def create_tenant_for_listing(request):
+    owner_user = CustomUser.objects.get(email=request.user)
+
+    if owner_user.user_type.lower() != 'owner':
+        return JsonResponse({'message': 'User not authorized to'})
+
+    robj = json.loads(request.body)
+
+    listing = Listing.objects.get(id=robj['lid'])
+    tenant = CustomUser.objects.get(id=robj['tenant_id'])
+
+    aobj = Applicants(**{'listing': listing, 'applicant': tenant})
+    aobj.save()
+
+    return JsonResponse({'message': f'Listing assigned to new tenant - { tenant.email }'})
+
+
+@require_GET
+def get_applicants(request, uid):
+    all_applicants = Applicants.objects.filter(listing__id=uid)
+
+    return JsonResponse(all_applicants)
+
+
+@require_GET
+def check_tenants(request, uid):
+    all_applicants = AcceptedApplicants.objects.filter(listing__id=uid, listing__owner=request.user)
+
+    return JsonResponse(all_applicants)
 
 
 class ServeReactApp(View):

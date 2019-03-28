@@ -127,3 +127,8 @@ STATICFILES_DIRS = (
 )
 
 STATIC_URL = '/static/'
+
+# Strip settings
+
+STRIPE_SECRET_KEY = 'sk_test_HWnm3CwhYdm4Q592P8GEOzVH00yn6DBK9i'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_uasakfrEufTeThOSX4LpgbFx00LSqSD5vq'

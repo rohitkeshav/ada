@@ -58,6 +58,8 @@ class Listing(models.Model):
     is_available = models.BooleanField(default=True)
     internal_review = models.BooleanField(default=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    rent = models.IntegerField(verbose_name='Listing rent')
+    payable = models.IntegerField(verbose_name='Amount left pay')
 
     class Meta:
         unique_together = ('title', 'owner',)
@@ -65,7 +67,19 @@ class Listing(models.Model):
 
 class Applicants(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
-    applicant = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    # Tenant foreign key
+    applicant = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING)
+
+    class Meta:
+        unique_together = ('listing', 'applicant', )
+
+
+class AcceptedApplicants(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+
+    # Tenant foreign key
+    applicant = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING)
 
     class Meta:
         unique_together = ('listing', 'applicant', )
